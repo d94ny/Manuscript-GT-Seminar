@@ -1,0 +1,921 @@
+\documentclass[a4paper]{article}
+%\pagestyle{plain}
+\title{\begin{flushleft}
+    \setlength{\parindent}{0pt}
+    \textbf{Stochastic Uncoupled Dynamics and Nash Equilibrium \cite{paper}}\vspace{30pt}\\
+    {\large
+    Manuscript by Daniel Balle\\
+    Seminar Algorithmic Game Theory, ETH Zurich\\
+    \today}
+\end{flushleft}}
+\date{}
+\author{}
+
+\usepackage[T1]{fontenc}
+\usepackage{subcaption}
+\usepackage{amssymb,enumerate,tikz, tkz-berge}
+\usetikzlibrary{automata, positioning}
+\usepackage[fleqn]{amsmath}
+\usepackage{amsthm}
+\usepackage{mdframed}
+\usepackage{sgame}
+\usepackage{bm}
+%\usepackage[margin=1.25in]{geometry}
+\usepackage{enumitem}% http://ctan.org/pkg/enumitem
+\setlist[description]{leftmargin=0.5cm}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{observation}{Observation}
+\newtheorem{lemma}{Lemma}
+\newtheorem{claim}{Claim}
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+\newcommand{\eq}[1]{\underline{#1}}
+
+\begin{document}
+
+\maketitle
+
+
+%%%%% TODO
+% explain the 2 and 4 epsilons
+% make the x which correspond to equilibria more distinguished (*)
+% clarify what the behavior probabilities really are
+% "then player i randomizes uniformly over Ai" == " x^i(a^i) = 1/|A^i| "
+
+\section{Introduction}
+
+Many adaptive dynamic games are subject to the natural requirement of \emph{uncoupledness}, which
+simply restricts the strategies of all players to depend only on their own utility functions. A well-known
+example of such a strategy is the best-response algorithm, as players decide on their next action
+based purely on the maximization of their individual payoffs.
+
+However in their previous paper, \emph{Uncoupled Dynamics Do Not Lead to Nash Equilibrium}
+\cite{prevpaper}, conveniently named after the impossibility result they established, the authors 
+showed that this simple and natural requirement was sufficient to break the guarantee of the convergence
+to a Nash Equilibrium. Surprisingly proving that no uncoupled strategy is up to the challenge
+the following straightforward two-player game is enough, which we will do shorty.
+
+\begin{figure}[h]
+\centering
+\begin{game}{3}{3}
+	    &  $\alpha$ &  $\beta$  & $\gamma$ \\
+	 $\alpha$    &  $1, 0$ & $0, 1$ & $1,0$\\
+	 $\beta$      &  $0, 1$ & $1, 0$ & $1, 0$\\
+	 $\gamma$ &  $0, 1$ & $0, 1$ & $1, 1$\\
+\end{game}
+\caption{A simple two-player game}
+\label{fig:example1}
+\end{figure}
+
+To address the main reason for this regrettable finding, namely the inability of players
+to detect equilibria individually due to their decentralized behavior under uncoupled dynamics,
+we will introduce the concept of \emph{history of play}. More specifically we will study how
+the past can influence the players strategies and the convergence to Nash Equilibria by
+considering the following questions:
+
+\begin{center}
+	\it
+	What if players could remember previous plays?\\
+	What if they had memories?
+\end{center}
+
+\section{Model and Concepts}
+
+
+\subsection{Static Setup}
+
+Let us first present the very familiar concept of a game in our setting
+% familiar stuff with time and random moves
+
+\begin{definition}
+    A basic static (or one-shot) game can be given in the following
+    strategic form:
+    \begin{itemize}
+        \item $N \geq 2$ players denoted by $i \in \{1, 2, ..., N\}$
+        \item A finite set of actions $A^i$ for each player $i$.\\
+            The set of action combinations is denoted as $A := A^1 \times A^2
+            \times ... \times A^N$
+        \item A payoff (or utility) function $u^i : A \to \mathbb{R}$ for each
+            player $i$. 
+    \end{itemize}
+    We then identify a game by its payoff functions $U := (u^1, ..., u^N)$.
+\end{definition}
+
+% TODO Uncoupledness!
+
+As mentioned previously this paper investigates convergence under stochastic
+dynamics and we will thus extend this definition by introducing the following
+concept:
+
+% TODO: better formatting please
+\begin{definition}
+    In a game which allows for random moves a player $i$ assigns a
+    probability $x^i(a)$ to each action $a \in A^i$. We call $x^i$ the
+    \emph{randomized} or \emph{mixed} action of player $i$.
+    \begin{itemize}
+        \item The set of all mixed actions for player $i$ is $\Delta(A^i)$
+        \item We denote by $\Delta := \Delta(A^1) \times ... \times \Delta(A^N)$
+            the set of randomized action combinations or $N$-tuples.
+        \item The payoff function is multi-linearly extended to $u^i : \Delta \to \mathbb{R}$
+    \end{itemize}
+\end{definition}
+
+The concepts of best-replying and Nash equilibria naturally extend to this
+stochastic setting:
+
+\begin{definition}
+    We say that the randomized actions $x^i \in \Delta(A^i)$ is an \emph{$\epsilon$-best reply}
+    to $x^{-i} := (x^1, ..., x^{i-1}, x^{i+1}, ..., x^N)$ if for all $y^i \in \Delta(A^i)$:
+    \[
+        u^i(x) \geq u^i(y^i, x^{-i}) - \epsilon
+    \]
+\end{definition}
+
+\begin{definition}
+    A \emph{Nash $\epsilon$-equilibrium} is a randomized action combination $\eq{x} =
+    (\eq{x}^1, ..., \eq{x}^N) \in \Delta$ such that each $\eq{x}^i$ is an $\epsilon$-best reply
+    to $\eq{x}^{-i}$.
+    % TODO: approximate equilibrium?
+\end{definition}
+
+\subsection{Dynamic Setup \& History of Play}
+
+We will now consider repeated play of $U$ at discrete time periods $t = 1, 2,
+...$ and denote by:
+\begin{itemize}
+    \item $a^i(t) \in A^i$ the action of player $i$ at time $t$
+    \item $a(t) = (a^1(t), ..., a^N(t)) \in A$ the action combination of all players at $t$
+\end{itemize}
+
+% say that all players play at the same time
+Note that the assumption of a round-robin scheme under which most games are played
+is dropped and
+all players realize an action at time period $t$, after which everyone observes the
+outcome $a(t)$.
+
+As this notations suggests this introduces the very interesting concept of a
+\emph{history of play}, i.e. players get a sense of time and progression of the game.
+The past is formally
+defined as the sequence $(a(1), ..., a(t-1))$ of actions combinations leading
+up to time $t$. Let's denote by $H^{t-1}$ the set of all histories of length
+$t-1$.
+In the dynamic setup of the game $U$ players can now base their decisions on information from the
+past.
+
+\begin{definition}
+    The \emph{strategy function} $f^i_t : H \to \Delta(A^i)$ of player $i$ at
+    time period $t$ assigns a mixed action $x^i \in \Delta(A^i)$ to each history $(a(1),
+    ..., a(t-1)) \in H^{t-1}$
+\end{definition}
+
+The \emph{strategy} of a player $i$ is thus simply a sequence of strategy
+functions $f^i := (f^i_1, ..., f^i_t, ...)$. However we will restrict ourselves
+exclusively to \emph{stationary} dynamics, i.e. the time $t$ has no influence on
+the players decision and all strategy functions are identical $f^i \equiv f^i_t$ for
+all $t$. We will also refer to the output of these strategy functions as \emph{behavior probabilities},
+i.e. mixed actions conditioned on the history of play.
+
+\medskip
+To study the convergence to Nash Equilibria under the influence of the past
+we will first introduce the concept of \emph{recall} which limits the information
+player may use to decide on their next move to a finite number of play periods
+immediately preceding the current time period.
+
+\begin{definition}
+    A strategy has $R$\emph{-recall} if only the last $R$ action combinations matter,
+    i.e. $f^i$ is of the form $f^i(a(t-R), ..., a(t-1))$ for all $t > R$.
+\end{definition}
+
+Players have $1$-recall strategies when they base their decision exclusively on
+the outcome of the previous action combination $a(t-1)$, as they do for example
+under best-response dynamics.
+
+Naturally the strategy of each player also depends on the repeated game
+induced by $U = (u^1, ..., u^N)$. We call the association of a strategy profile
+to the payoff functions a \emph{strategy mapping} $f(U) = (f^1(U), ..., f^N(U))$.
+The second restriction our dynamic setup has to satisfy is \emph{uncoupledness}
+which dictates that the moves of every player do not depend on the payoff
+functions of other players. Thus $f^i(U) \equiv f^i(u^i)$.
+
+\section{Pure Equilibria}
+
+Now that we have formally defined our model we will study the convergence of
+uncoupled stationary dynamics to Nash Equilibria. We will do so by first considering
+the simpler scenario of Pure Nash Equilibria $\eq{a} = (\eq{a}^1, ..., \eq{a}^N)$.
+
+% However before introducing the concept of stochastic moves we will restrict ourselves to the simpler scenario of Pure
+% Equilibria, i.e. action combinations $\eq{x} = (\eq{x}^1, ..., \eq{x}^N)$ where each $\eq{x}^i$ is a
+% pure action $\eq{a}^i \in A^i$.
+
+%We can thus focus on first getting an initial understanding of the
+%contributions of finite recall, the ability of players to remember the restricted past directly leading up
+%to the current time period.
+
+We will begin by giving a generalization of the impossibility conclusion established
+by the authors in their previous paper \emph{Uncoupled Dynamics Do Not Lead to Nash Equilibrium}
+\cite{prevpaper}.
+However as a follow-up to this rather regrettable result we will then show how allowing for
+a longer recall past the current situation dramatically improves the outlook on convergence.
+
+\subsection{The Bad News}
+
+\begin{theorem}
+  There are no uncoupled, 1-recall, stationary strategy mappings that guarantee almost sure
+  convergence\footnote{A sequence $X_n$ converges {\bf almost surely} to $X$ if $Pr[\lim_{n \to \infty} X_n = X] = 1$} to pure Nash equilibria in all games where such equilibria exist.
+\end{theorem}
+
+\begin{proof}
+A simple proof by contradiction based on the example given during the introduction
+suffices to establish this first theorem. Consider thus once again the following two-player
+game of figure \ref{fig:example1}.
+
+\begin{figure}[h]
+\centering
+\begin{game}{3}{3}
+	    &  $\alpha$ &  $\beta$  & $\gamma$ \\
+	 $\alpha$    &  $1, 0$ & $0, 1$ & $1,0$\\
+	 $\beta$      &  $0, 1$ & $1, 0$ & $1, 0$\\
+	 $\gamma$ &  $0, 1$ & $0, 1$ & $1, 1$\\
+\end{game}
+\caption{A simple two-player game}
+\label{fig:example1}
+\end{figure}
+
+Now suppose for sake of contradiction that there exists an uncoupled, 1-recall, stationary
+strategy mapping $f$ that guarantees convergence to pure Nash Equilibria when these exists.
+In the game above this would be $(\gamma, \gamma)$.
+
+\begin{observation}
+	In each action combination $a(t)$ at least one of the two players is best-replying.
+\end{observation}
+Based on the above observation we can first show that for such a strategy mapping the following must hold for our two-player game.
+\begin{lemma}
+	\label{lemma:bestrep}
+	If player $i$ is best-replying in state $a(t)$ he will play the same move at $t+1$
+\end{lemma}
+\begin{proof}
+	Suppose without loss of generality that in state $a(t)$ player 1 is best-replying.
+	We then create a new game $U' = (u^1, \bar{u}^2)$ by changing only
+	the utility function $u^2$ of player 2 such that $\bar{u}^2(a(t)) = 2$ and $\bar{u}^2(\gamma, \gamma) = 0$.
+	In this new game $a(t)$ is now the unique pure Nash equilibria.
+	Since our strategy mapping converges and is 1-recall neither player will choose
+	a different action at time $t+1$. Yet by uncoupledness the strategy of player 1 is
+	independent of the utility function of player 2, and thus he will not move in the
+	original game $U$ either.
+\end{proof}
+
+\begin{observation}
+	In any action combination $a(t)$ in which only player $i$ plays $\gamma$, player
+	$i$ is not best-replying and thus player $j$ is.
+\end{observation}
+
+From the above lemma and observation it follows that the state $(\gamma, \gamma)$ can
+never be reached when starting from any other state. Indeed
+\begin{enumerate}
+	\item if neither player chose $\gamma$ only the player currently not best-replying might deviate to $\gamma$ in the next round, and
+	\item in any situation in which exactly one player plays $\gamma$ the opponent is best-replying and thus won't move.
+\end{enumerate}
+This contradicts our convergence assumption.
+\end{proof}
+
+
+\begin{remark}
+	In turns out that we obtain a positive result in any two player game if we require \emph{genericity}, i.e.
+	uniqueness of best replies for each player. The proof of this proposition is omitted here.
+\end{remark}
+
+\subsection{Not All Is Lost} % A New Hope
+
+While the previous impossibility result might seem quite discouraging the simple addition of recall
+yields a drastic improvement. As we will now demonstrate how having players remember only their previous
+two action is sufficient to guarantee convergence to a pure Nash equilibria.
+
+\begin{theorem}
+There exist uncoupled, 2-recall, stationary strategy mappings that guarantee almost sure convergence to
+pure Nash equilibria  in every game where such equilibria exist.
+\end{theorem}
+
+We will now see the first of three construction proofs, all very similar in nature but increasingly more intricate.
+
+\begin{proof}
+	In the first part of the following proof we will describe a strategy mapping $f$ and then proceed to
+	show that $f$ satisfies all requirements listed above in the second part.
+	\begin{description}
+		\item[Part 1] A state is now identified as the play of the two previous periods $(a', a) := (a(t-1), a(t)) \in A \times A$.
+			The strategy mapping $f^i$ of each player $i$ is then defined as follows:
+			\begin{itemize}
+				\item if $a' = a$ and $a^i$ is a best reply of player $i$ to $a^{-i}$ then player $i$ plays the
+				same action $a^i$;
+				\item otherwise player $i$ picks an action $\bar{a}^i$ uniformly at random from $A^i$, i.e. he plays
+				a mixed action $x^i$ such that $x^i(a^i) = 1/|A^i|$ for all $a^i$.
+			\end{itemize}
+		\item[Part 2] To prove that this strategy mapping $f$ does indeed guarantee convergence we will
+			partition the state space $S = A \times A$ into four regions:
+			% Mention markov chains?
+			\begin{gather*}
+				S_1 := \{ (a, a) \in S : a \text{ is a Nash equilibrium }\}\\
+				S_2 := \{ (a', a) \in S : a' \neq a \text{ and } a \text{ is a Nash equilibrium }\}\\
+				S_3 := \{ (a', a) \in S : a' \neq a \text{ and } a \text{ is not a Nash equilibrium }\}\\
+				S_4 := \{ (a, a) \in S : a \text{ is not a Nash equilibrium }\}
+			\end{gather*}
+			Note that this strategy mapping then induces a Markov chain over $S$, as we can
+			assign a probability $p$ to the transitions between any two states $s'$ and $s$.
+			\begin{observation}
+				Each state in $S_1$ is absorbing.
+			\end{observation}
+			This observation follows directly from the fact that in any Nash equilibrium $\eq{a}$ all players are best responding
+			and $f^i$ thus dictates that player $i$ plays the same action $\eq{a}^i$.
+			
+			\begin{lemma}
+				For all states $s \in S_2 \cup S_3 \cup S_4$ there is a strictly positive probability $p > 0$ to
+				reach a state $s' \in S_1$ in finitely many periods. % transient state
+			\end{lemma}
+			
+			We will consider each partition space progressively:
+			\begin{itemize}
+				\item For all states $(a', a) \in S_2$ each player $i$ randomly picks a new action $\bar{a}^i$ since $a' \neq a$.
+					Thus for every player $i$ there is a positive probability $1/|A^i|$ that he plays the same action
+					$\bar{a}^i = a^i$ again. Since $a$ was a Nash equilibrium the resulting state $(a, a)$ belongs to $S_1$.
+		
+				\item For all states $(a', a) \in S_3$ each player $i$ again randomly picks a new action $\bar{a}^i$.
+					Thus there is positive probability that all players play a pure Nash equilibrium $\bar{a}$.
+					The resulting sate $(a, \bar{a})$ belongs to $S_2$ which we have already shown to be transient.
+					
+				\item For all states $(a, a) \in S_4$ at least one player $i$ is not best-replying since $a$ would otherwise
+					be a pure Nash equilibrium. That player $i$ will randomly play an action $\bar{a}^i$ resulting in a state
+					$(a, \bar{a}) \in S_2 \cup S_3$.
+			\end{itemize}
+%			\begin{tikzpicture}
+%				\node[state] (s4) {$S_4$};
+%				\node[state, right=of s4] (s3) {$S_3$};
+%				\node[state, right=of s3] (s2) {$S_2$};
+%				\node[state, right=of s2] (s1) {$S_1$};
+%				
+%				\draw[every loop]
+%					(s4) edge[bend left] node {} (s3)
+%					(s4) edge[bend right] node {} (s2)
+%					(s3) edge[bend left] node {} (s2)
+%					(s2) edge[bend left] node {} (s1)
+%					(s1) edge[loop above] node {} (s1);
+%			\end{tikzpicture}
+			Therefore $S$ is an absorbing Markov chain as every state has a positive probability of reaching a state $s \in S_1$
+			in at most three steps. Once a state $(a, a) \in S_1$ where $a$ is a pure Nash equilibrium is reached the players will
+			continue to play $a$ every period.
+	\end{description}
+\end{proof}
+So we have seen that even extremely simple strategies may guarantee convergence to pure Nash equilibria when we introduce
+the concept of recall. And surprisingly remembering only the past two periods is already sufficient.
+Indeed the difficulty of convergence can be mostly attributed to the inability of players to detect equilibria individually as
+their behavior is decentralized under uncoupled dynamics.
+However by remembering the past two action combinations players can now observe a pattern and then act in coordinated
+manner. Even if player $i$ is currently playing a best reply $a^i$ he will nonetheless randomly chose his next action 
+as long as the pattern of the state $(a', a)$ seems to indicate that a global optimum hasn't been reached yet.
+
+\begin{remark}
+	We are exclusively studying the possibility of converge, but not the actual rate of convergence.
+	Thus while the previous strategy mapping now yields positive results for the detection of equilibria,
+	the randomized search aspect is less appealing.
+\end{remark}
+
+%%% Do an example - show how this would work on the game above!
+
+\section{Mixed Equilibria}
+
+Under the existence of pure Nash equilibria we have observed very satisfying results in terms of convergence
+possibility. However we will now lift this very optimistic assumption and consider the general case of mixed and
+approximate equilibria $\eq{x} \in \Delta$
+
+% say more stuff about the approximation
+
+\subsection{Distributions of Play}
+
+Before studying the convergence of the actual behavior probabilities $f^i(\cdot) \in \Delta(A^i)$ we will
+introduce the following two distributions:
+
+\begin{definition}
+	For a given history of play $(a(1), ..., a(t))$ we denote by $\Phi_t$  the empirical frequency
+	distribution for each action combination $a \in A$:
+	$$
+		\Phi_t[a] := |\{ 1 \leq \tau \leq t : a(\tau) = a \}|/t
+	$$
+	We refer to $(\Phi_t[a])_{a \in A} \in \Delta(A)$ as the joint distribution of play.
+\end{definition}
+\begin{definition}
+	Similarly we refer to $(\Phi_t^i[a^i])_{a^i \in A^i} \in \Delta(A^i)$ as the marginal distribution of player $i$, where:
+	$$
+		\Phi_t^i[a^i] := |\{ 1 \leq \tau \leq t : a^i(\tau) = a^i \}|/t
+	$$
+\end{definition}
+
+In the remainder of this section we are interested in studying the convergence of these distributions $\Phi$ to Nash 
+$\epsilon$-Equilibria $\eq{x} = (\eq{x}^1, ..., \eq{x}^N) \in \Delta(A)$.
+However it is important to distinguish between the convergence of the joint distribution of play
+and the convergence of the marginal distribution of each player.
+
+\begin{definition}
+For a given $\epsilon$-Equilibria $\eq{x} = (\eq{x}^1, ..., \eq{x}^N)$ the \emph{induced} joint distribution $\bar{\Phi}$ over every action combination
+$a = (a^1, ..., a^N) \in A$ is simply the product of the players action combinations $\bar{\Phi}[a] = \prod_i \eq{x}^i(a^i)$.
+\end{definition}
+
+Of course if the joint distribution of play converges to the Nash Equilibrium, then so do the marginal distributions.
+However the opposite implication is false. For this statement to hold our strategy mapping has to 
+guarantee \emph{independence} among the players.
+Consider the following example which illustrates this difference:
+
+% Maybe skip this example?
+\begin{example}
+	Given the history of play $h = ((\alpha, \beta), (\alpha, \gamma), (\beta, \beta), (\alpha, \beta), (\alpha, \gamma))$
+	for some game $U$ we get a joint distribution of play
+	\begin{gather*}
+		\Phi_t(\alpha, \beta) = 2/5, \, \Phi_t(\alpha, \gamma) = 2/5, \Phi_t(\beta, \beta) = 1/5
+	\end{gather*}
+	while the marginal distributions for player 1 and 2 are respectively
+	\begin{gather*}
+		\Phi_t^1(\alpha) = 4/5, \, \Phi_t^1(\beta) = 1/5, \Phi_t^1(\gamma) = 0/5\\
+		\Phi_t^2(\alpha) = 0/5, \, \Phi_t^2(\beta) = 3/5, \Phi_t^2(\gamma) = 2/5
+	\end{gather*}
+	Now suppose that these correspond exactly to the only
+	Nash Equilibrium $\eq{x} = (\Phi^1, \Phi^2)$ of the game. Thus if our strategy mapping $f$ is defined such that the given history of
+	play is played repeatedly with periodicity 5 we obtain convergence of the marginal distributions of play.
+	However the joint distribution induced by $x$ differs from the joint distribution of play $\Phi$:
+	\begin{gather*}
+		\bar{\Phi}(\alpha, \beta) =  12/25, \, \bar{\Phi}(\alpha, \gamma) = 8/25, \,  \bar{\Phi}(\beta, \beta) = 2/25
+	\end{gather*}
+\end{example}
+
+We can naturally argue that the converge of both distributions of play is preferred. Unfortunately constructing a strategy mapping
+which guarantees independence of play between players is slightly more complex. We will thus first direct our efforts to
+the convergence of the marginal distributions.
+
+\subsection{Convergence of Marginal Distributions}
+
+For the following results we will consider that there is a bound $M$ on the payoffs, i.e. for all players $i$ and 
+all action combinations $a \in A$ it holds that $|u^i(a)| \leq M$.
+% maybe say why?
+
+\begin{theorem}
+\label{th:marginal}
+	For every $M$ and $\epsilon > 0$ there exists an integer $R$ and an uncoupled, $R$-recall,
+	stationary strategy mapping that guarantees, in every game with payoffs bounded by $M$, the
+	almost sure convergence of the marginal distributions of play $\Phi^i$ to a Nash $\epsilon$-equilibria
+	$\eq{x} = (\eq{x}^1, ..., \eq{x}^N)$.
+	
+	\medskip
+	So for every player $i$ and every action $a^i \in A^i$:
+	\[
+		\lim_{t \to \infty} \Phi_t^i[a^i] = \eq{x}^i(a^i)
+	\]
+\end{theorem}
+
+\begin{proof}
+	As for the previous proof we will first describe the construction of a strategy mapping $f$ and then
+	proceed to prove that it will lead to convergence.
+	\begin{description}
+		\item[Part 1] Given $\epsilon > 0$ and a game $U$ with bounded utility functions we first
+		find some $K$ such that there is a Nash $2\epsilon$-Equilibrium $\tilde{y} = (\tilde{y}^1, ..., \tilde{y}^N)$
+		with all probabilities being multiples of $1/K$, i.e. for all players $i$:
+		\[
+			\forall a^i \in A^i \, : \, K\tilde{y}^i(a^i) \in \mathbb{N}
+		\]
+		%\begin{remark}
+		%	For those wondering why we are considering a Nash $2\epsilon-$ and not a simple $\epsilon$-equilibria
+		%	hold on to that thought, we will address it at the end of the proof.
+		%\end{remark}
+		
+		We can convince ourselves that we can always pick a $K$ large enough that satisfies this requirement.
+		Now given $\tilde{y}$ one can fix a sequence of action combinations $\tilde{a} := ( \tilde{a}_1, ..., \tilde{a}_K)$ of length $K$
+		such that the corresponding marginal distribution of each player $i$ are exactly $\tilde{y}^i$, i.e.
+		\[
+			\forall a^i \in A^i \, : \, \Phi^i[a^i] = \tilde{y}^i
+		\]
+		\begin{example}
+			Given the following equilibrium $\tilde{y}$ over two players:
+			\begin{gather*}
+				\tilde{y}^1(\alpha) = 2/5, \, \tilde{y}^1(\beta) = 1/5, \tilde{y}^1(\gamma) = 2/5\\
+				\tilde{y}^2(\alpha) = 1/5, \, \tilde{y}^2(\beta) = 1/5, \tilde{y}^2(\gamma) = 3/5
+			\end{gather*}
+			a fixed sequence of action combinations with corresponding marginals would be
+			$\tilde{a} = ( (\alpha, \alpha), (\alpha, \beta), (\beta, \gamma), (\gamma, \gamma), (\gamma, \gamma) )$
+		\end{example}
+		
+		% Then given this equilibrium $\bar{y}$ we  --- do this later	
+		% some $K$ such that for all $x, y \in \Delta$:
+		%\[
+		%	\Bigg[ ||x^i - y^i ||_\infty \leq \frac{1}{K} \text{ for all } i \,\Bigg] \implies \Bigg[ | u^i(x) - u^i(y) | \leq \epsilon \text{ for all } i \,\Bigg]
+		%\]
+		% K is responsible for the recall (2K)
+		% but also for finding a 2\epsilon Nash Equilibria
+		
+		
+		The recall of our strategy mapping is then chosen to be $R = 2K$. Similar to the previous construction proof
+		a state is now identified as a history of play of the previous $2K$ periods : $s := (a_1, a_2, ..., a_{2K})$ with $a_k \in A$.
+		\begin{definition}
+			A state is $K$-periodic if for all $k= 1, ..., K$ it holds that $a_{K+k} = a_{k}$,
+			i.e. $s = (a_1, a_2, .., a_K, a_1, a_2, ..., a_K)$
+		\end{definition}
+		\begin{definition}
+		Given the current state $s$ we denote by $z^i \in \Delta(A^i)$ the frequency distribution of the last $K$ actions of
+		each player $i$ :
+		\[
+			z^i(a^i) := | \{ a^i_k = a^i \, | \, k \in \{K+1, .. , 2K\} \} | / K
+		\]
+		\end{definition}
+		We write $z = (z^1, ..., z^N) \in \Delta$ the corresponding distribution combination over all players.
+		% Maybe example?
+		The strategy mapping $f^i$ of each player is then defined as follows :
+		\begin{itemize}
+			\item if the current state $s$ is $K$-periodic and $z^i$ is a $2\epsilon$-best reply to $z^{-i}$
+			then player $i$ plays the same action he played $K$ and $2K$ periods earlier : $\bar{a}^i := a^i_1 = a^i_{K+1}$;
+			\item otherwise player $i$ picks an action $\bar{a}^i$ uniformly at random from $A^i$, i.e. he plays
+				a mixed action $x^i$ such that $x^i(a^i) = 1/|A^i|$ for all $a^i$.
+
+		\end{itemize}
+		\begin{remark}
+			For Pure Nash Equilibria $K$ would be 1 and we obtain the same 2-recall strategy mapping as defined in
+			the previous section.
+		\end{remark}
+		
+		\item[Part 2] Our state space $S$ defined as all sequences over $A$ of length $2K$ can once again be partitioned
+		into four regions:
+		\begin{gather*}
+			S_1 := \{ s \text{ is $K$-periodic and $z$ is a Nash $2\epsilon$-equilibrium }\}\\
+			S_2 := \{ s \text{ is not $K$-periodic and $z$ is a Nash $2\epsilon$-equilibrium }\}\\
+			S_3 := \{ s \text{ is not $K$-periodic and $z$ is not a Nash $2\epsilon$-equilibrium }\}\\
+			S_4 := \{ s \text{ is $K$-periodic and $z$ is not a Nash $2\epsilon$-equilibrium }\}
+		\end{gather*}
+		\begin{observation}
+			In the Markov chain over $S$ induced by $f$ each state in $S_1$ is absorbing.
+		\end{observation}
+		Indeed once a state $s \in S_1$ is reached in all players are $2\epsilon$-best replying since $z$ is
+		an equilibria. Therefore the $K$-periodicity of the state is preserved and
+		the frequency distributions $z$ remain unchanged.
+		\begin{lemma}
+			For all states $s \in S_2 \cup S_3 \cup S_4$ there is a strictly positive probability $p > 0$ to
+			reach a state $s' \in S_1$ in finitely many periods. % transient state
+		\end{lemma}
+		
+		\begin{itemize}
+			\item For every state $s \in S_2$ all players randomly pick a new action $\bar{a}^i$ since $s$ is not $K$-periodic.
+			Thus there is a positive probability that all players $i$ play $\bar{a}^i = a^i_{K+1}$ leading to $\bar{a} = a_{K+1}$.
+			In this scenario the frequency distribution
+			$z$ remains the same $2\epsilon$-equilibrium and the new state $s'$ is still in $S_2$.
+			There is therefore a positive probability that this behavior repeats and after at most $K$ steps the state becomes $K$-periodic
+			and we thus reached a state in $S_1$.
+				\[
+				a_1, \overbrace{a_2, a_3, ... \mathbf{a}_{K+1},  \underbrace{a_{K+2}, ..., a_{2K}, \mathbf{\bar{a}} \,\, }_{z}}^{s}
+				\]
+			
+			\item For every state $s \in S_3$ all players again randomize their action  $\bar{a}^i$.
+			Now suppose this leads to some action combination $\bar{a} \neq a_{K+1}$. This guarantees that at least
+			$K$ additional rounds have to be played to reach $K$-periodicity.
+				\[
+				..., a_{K},  \overbrace{\underbrace{\mathbf{a}_{K+1},  ..., a_{2K}}_{K \text{ rounds}}, \underbrace{\mathbf{\bar{a}}, a'_1, .., a'_{K-1}}_{K \text{ rounds}} }^{s}
+				\]
+			There is then a positive probability that the next $K$ rounds produce the sequence $\tilde{a}$ we defined
+			earlier, therefore making $z = \tilde{y}$ a Nash $2\epsilon$-Equilibrium:
+				\[
+				..., a_{K+1}, \overbrace{a_{K+2}, ... , \mathbf{\bar{a}},  \underbrace{\tilde{a}_1, ..., \tilde{a}_{K} }_{z = \tilde{y}}}^{s}
+				\]
+			And depending on whether this state is $K$-periodic or not we are either in $S_1$ or $S_2$.
+			
+			\item Finally every state $s \in S_4$ can produce a new state $s' \in S_3$ by simply breaking its $K$-periodicity with
+			$\bar{a} \neq a_{K+1}$.
+		\end{itemize}
+	\end{description}
+	Therefore we will eventually always reach an absorbing state $s \in S_1$ and as observed earlier the frequency distribution
+	$z$ of the last $K$ actions will become constant, i.e. it will remain the same each period.
+	The marginal distribution of play of each player thus converges to $z$:
+	\[
+		\lim_{t \to \infty} \Phi_t^i[a^i] = z^i(a^i)
+	\]
+\end{proof}
+
+% Do a note about the 2-epsilon thingy!!
+%\begin{remark} Why $2\epsilon$-Nash Equilibria???
+%\end{remark}
+
+This strategy mapping is simply a generalization of the construction seen for Pure Nash Equilibria.
+And just as before players get "synchronized" by acting in a coordinated manner once a $K$-periodic state
+with an equilibrium is reached. This breaks the independence between players required for the convergence
+of the joint distribution of play to the Nash Equilibrium.
+
+\subsection{Convergence of Joint Distribution}
+
+It turns out we can however extend the possibility results of convergence for marginals to joint distributions
+by proving the existence of a strategy mapping $f$ which dictates independent behaviors for each player.
+
+\begin{theorem}
+	For every $M$ and $\epsilon > 0$ there exists an integer $R$ and an uncoupled, $R$-recall,
+	stationary strategy mapping that guarantees, in every game with payoffs bounded by $M$, the
+	almost sure convergence of the joint distribution of play $\Phi$ to the induced distribution of
+	a Nash $\epsilon$-equilibrium $\eq{x} = (\eq{x}^1, ..., \eq{x}^N)$.
+	\[
+		\lim_{t \to \infty} \Phi_t[a^i] = \prod_i \eq{x}^i(a^i)
+	\]
+	In addition the occurrence probability of a given action combination at time $t$ also converges to
+	the same Nash $\epsilon$-equilibrium:
+	\[
+		\lim_{t \to \infty} Pr[a(t) = a] = \prod_i \eq{x}^i(a^i)
+	\]
+\end{theorem}
+
+In other words, after a sufficient period of time the probability of encountering some action combination
+$a$ coincides exactly with the overall probability of playing $a$ under a Nash Equilibria $\eq{x}$, 
+which by independence is the product of each players mixed action $\eq{x}^i(a^i)$.
+Note that this however was not the case for the strategy mapping described in the proof of theorem
+\ref{th:marginal}, because of the synchronized behavior which led to a periodic action combination sequence.
+Let's illustrate this quickly by looking at our familiar example:
+
+\begin{example}
+	Because of the periodic play dictated by $f$ the sequence $h = ((\alpha, \beta), (\alpha, \gamma), (\beta, \beta), (\alpha, \beta), (\alpha, \gamma))$
+	will get repeated indefinitely. As seen earlier the marginals then converge to the Nash Equilibrium $x$ :
+	\begin{gather*}
+		x^1(\alpha) = 4/5, \, x^1(\beta) = 1/5, x^1(\gamma) = 0/5\\
+		x^2(\alpha) = 0/5, \, x^2(\beta) = 3/5, x^2(\gamma) = 2/5
+	\end{gather*}
+	Yet the action combination $(\beta, \gamma)$ which has probability $x^1(\beta) \cdot x^2(\gamma) = 2/25$
+	of being played in our Nash Equilibrium has zero occurrence probability $Pr[a(t) = (\beta, \gamma)] = 0$, i.e.
+	it will never happen.
+\end{example}
+
+\begin{proof}
+	We will present an abbreviated version of the proof as it is quite long and intricate.
+	The main idea behind the construction of this strategy mapping is to introduce
+	small \emph{random perturbations} every now and then for every player independently.
+	We thus avoid periodicity and synchronization between the players and guarantee independent behavior of play.
+	
+	\begin{description}
+		\item[Part 1] For a given $\epsilon > 0$ and a game $U$ with bounded utility functions we once again
+		find some $K$ as in the previous proof. The recall of our strategy mapping is then chosen to be $R=3K$.
+		The intuition behind this assignment is that players should still be able to recognize some basic periodic play
+		even with the introduction of random errors.
+		
+		\medskip
+		A state is then defined as a history of play $s := (a_1, ..., a_{3K}) \in A \times ... \times A$ of length $3K$,
+		and we write $s^i := (a^i_1, .., a^i_{3K}) \in A^i \times ... \times A^i$ the corresponding action sequence of player $i$. We then formally
+		identify these random perturbations as repeated or "delayed" actions.
+				
+		\begin{definition}
+			Given a sequences of actions $s^i := (a^i_1, ..., a^i_{3K})$ of length $3K$ of some player $i$ we can
+			sometimes identify it as one of the following two special types:
+			\begin{itemize}
+				\item {\bf Type E} ("Exact"): the sequence is $K$-periodic, i.e. $a^i_{K+k} = a^i_k$ forall $k \in \{1, ..., 2K\}$
+					and consists of a repeated \emph{basic} sequence $c^i := (a^i_1, ..., a^i_K)$. 
+				\item {\bf Type D} ("Delayed"): there is some delay $a^i_d = a^i_{d-1}$ such that if $a^i_d$ were to
+					be dropped the remaining sequence $s^i_{-d}$ would be $K$-periodic and again consisting
+					of a repeated \emph{basic} sequence $c^i$.
+			\end{itemize}
+		\end{definition}
+		For every sequence $s^i$ of type E or D we define the frequency distribution of actions in its basic sequence
+		\footnote{the basic sequence $c^i$ of any sequence $s^i$ is uniquely defined (proof omitted here).} $c^i := (c^i_1, ..., c^i_K)$,
+		called the \emph{basic frequency distribution} $y^i \in \Delta(a^i)$, as follows:
+		\[
+			y^i(a^i) := | \{ c^i_k = a^i \, | \, k \in \{1, .. , K\} \} | / K
+		\]
+		We write $y = (y^1, ..., y^N) \in \Delta$ the basic distribution combination over all players.
+		\begin{remark}
+			This will look familiar to the more attentive readers as it draws parallels
+			to the frequency distribution $z^i$ of a player $i$ over his last $K$ actions
+			from the previous proof - which we will also use further down.
+		\end{remark}
+		
+		We say that a state $s$ is \emph{regular} if for all players $i$ the corresponding action
+		sequence $s^i$ is either of type E or D, and \emph{irregular} otherwise.
+		The strategy mapping $f^i$ of each player $i$ is then defined as follows :
+		\begin{itemize}
+			\item if the current state $s$ is regular, the basic frequency distribution $y^i$ is a $4\epsilon$-best reply to $y^{-i}$ % formal definition here? nah
+			and $s^i$ is of type {\bf E}, then \begin{itemize}
+				\item with probability 1/2 player $i$ continues his $K$-periodicity by playing $\bar{a}^i := a^i_1 = a^i_{K+1} = a^i_{2K+1}$,
+				\item and with probability 1/2 he produces a {\bf delay} by repeating his previous action $\bar{a}^i := a^i_{3K}$.
+			\end{itemize}
+			\item if the current state $s$ is regular, the basic frequency distribution $y^i$ is a $4\epsilon$-best reply to $y^{-i}$ % formal definition here? nah
+			and $s^i$ is of type {\bf D}, then player $i$ also continues his $K$-periodic play by playing either $a^i_K$ or $a^i_{K+1}$ depending
+			on where the delay is.
+			\item otherwise player $i$ picks an action $\bar{a}^i$ uniformly at random from $A^i$
+		\end{itemize}
+		\item[Part 2] Using both $z$ and $y$ our state space $S$ defined as all sequences over $A$ of length $3K$ can once again be partitioned
+		into four regions:
+		\begin{gather*}
+			S_1 := \{ s \text{ is regular and $y$ is a Nash $4\epsilon$-equilibrium }\}\\
+			S_2 := \{ s \text{ is irregular and $z$ is a Nash $2\epsilon$-equilibrium }\}\\
+			S_3 := \{ s \text{ is regular and $y$ is not a Nash $4\epsilon$-equilibrium }\}\\
+			S_4 := \{ s \text{ is irregular and $z$ is a Nash $2\epsilon$-equilibrium }\}
+		\end{gather*}
+		In a fashion which should be quite familiar by now we would then use the following two claims
+		to complete our proof:
+		\begin{claim}
+			All states $s \in S_1$ are ergodic, i.e. there is a nonzero probability of exiting the
+			state and the probability of an eventual return to it is 1.
+		\end{claim}
+		\begin{claim}
+			All states $s$ in $S_2 \cup S_3 \cup S_4$ 
+			have a positive probability of reaching a state $s' \in S_1$ in finitely many steps.
+		\end{claim}
+	\end{description}
+\end{proof}
+
+% Reflect on this section
+
+\section{Behavior Probabilities}
+
+The previous section established the convergence of the occurrence probability $Pr[a(t) = a]$ to
+Nash $\epsilon$-Equilibria, which also implies the convergence of the marginal occurrence probabilities:
+\[
+	\lim_{t \to \infty} Pr[a^i(t) = a^i] = \eq{x}^i(a^i)
+\]
+These were however unconditioned on the history of play. We will thus try to extend our possibility results
+one step further and 
+study the convergence of the actual \emph{behavior probabilities}
+as assigned by the strategy functions $f^i : H \to \Delta(A^i)$ of each player $i$:
+ \[
+ 	Pr[a^i(t) = a^i | a(1), ..., a(t-1) ] \equiv f^i(a(t - R), ..., a(t-1))(a^i)
+\]
+Under finite $R$-recall of course these probabilities are conditioned on only the previous $R$ actions.
+Unfortunately our series of encouraging results seem to come to an end here as we will show that
+the convergence to the behavior probabilities cannot be guaranteed in general.
+
+\begin{theorem}
+	For every small enough $\epsilon > 0$, there are no uncoupled, finite recall, stationary strategy
+	mappings $f$ that guarantee in every game, the almost sure convergence of the behavior probabilities
+	to Nash $\epsilon$-equilibria.
+\end{theorem}
+
+\begin{proof}
+	The silver lining of this rather regrettable impossibility result is that at least a simple proof by contradiction
+	is a nice change of pace given the three previous construction proofs. Thus consider the following two
+	games:
+	
+	\begin{figure}[h]
+	\centering
+		\begin{subfigure}{0.2\textwidth}
+		\begin{game}{2}{2}
+    	 		&  $\alpha$ &  $\beta$ \\
+    			$\alpha$    &  $1, 0$ & $0, 1$\\
+    			$\beta$      &  $0, 1$ & $1, 0$\\
+        		\end{game}
+        		\caption{Game $U$}
+        		\label{fig:exampleU}
+		\end{subfigure}
+		\qquad\qquad\qquad
+		\begin{subfigure}{0.2\textwidth}
+		\begin{game}{2}{2}
+    	 				&  $\alpha$ &  $\beta$ \\
+    			$\alpha$    &  $1, 1$ & $0, 0$\\
+    			$\beta$      &  $0, 1$ & $1, 0$\\
+        		\end{game}
+        		\caption{Game $U'$}
+        		\label{fig:exampleU'}
+		\end{subfigure}
+        \end{figure}
+       
+	\begin{observation}
+		Game $U$ has a unique, completely mixed Nash equilibrium for $\eq{x}^1 = \eq{x}^2 = (0.5, 0.5)$ while
+		$\eq{a} = (\alpha, \alpha)$ is the unique pure Nash equilibrium of game $U'$.
+	\end{observation}
+	For sake of contradiction assume that there is an uncoupled, $R$-recall, stationary strategy
+	mappings $f$ that guarantee in every game, the almost sure convergence of the behavior probabilities.
+	Therefore in both games the action $\alpha$ of either player will be assigned a positive probability $x^i(\alpha) > 0$.
+	And hence the state $s = (\eq{a}, ..., \eq{a})$ of length $R$ will have positive probability of occurring after
+	a significant time $T$ in game $U$ and $U'$.
+	
+	Once in this state $s$ the behavior probabilities $f^i(s)$ should be close to the the actual Nash Equilibria $\eq{x}$ and $\eq{a}$
+	of respectively $U$ and $U'$.
+	
+	\begin{observation}
+		The utility function $u^1$ of player 1 is the same in both games.
+	\end{observation}
+	
+	However since $f$ is an uncoupled strategy mapping, the above observation implies that the behavior probability
+	$f^1(s)(\alpha)$ of player 1 should then be identical in both games. This contradicts our assumption that $f$
+	converges to the Nash Equilibria.
+\end{proof}
+ 
+\section{Memory - Beyond Recall}
+
+In light of this unfortunate impossibility result we naturally ask ourselves if we can obtain convergence
+by giving our players even more abilities while still guaranteeing uncoupled strategies.
+
+Finite recall implied that the distant past was irrelevant and only the last $R$ periods were taken
+into consideration when deciding on the next mixed action. However it is not unreasonable to believe that
+certain periods might be much more impactful than others, and thus even if their
+occurrence is far beyond the horizon of our recall, may still strongly influence a players decisions
+- very much like human behavior.
+
+We can thus imagine lifting this continuity restriction while still maintaining the desire to limit a players
+recollection of the past. We are therefore effectively introducing the concept of \emph{memory}.
+
+\begin{definition}
+	A player's strategy $f^i$ has finite $R$-memory if it can be implemented by a finite-state 
+	automaton in $|A|^R$ states.
+\end{definition}
+
+More specifically at every period $t$ the input to the "strategy" automaton would be the action
+combination $a(t) \in A$ and its output would be the mixed action $x^i \in \Delta(A^i)$ to be played 
+during period $t+1$.
+And indeed allowing players to have "memories" leads to a positive result.
+
+%And indeed once players have the ability to recall arbitrary action combinations from the past
+%we finally obtain convergence of the behavior probabilities.
+
+\begin{theorem}
+	For every $M$ and $\epsilon > 0$ there exists an integer $R$ and an uncoupled, $R$-memory,
+	stationary strategy mapping that guarantees, in every game with payoffs bounded by $M$, the
+	almost sure convergence of the behavior probabilities to a Nash $\epsilon$-equilibrium $\eq{x} = (\eq{x}^1, ..., \eq{x}^N)$:
+	\[
+		\lim_{t \to \infty} Pr[a^i(t) = a^i | a(1), ..., a(t-1) ] = \eq{x}^i(a^i)
+	\]
+\end{theorem}
+
+\begin{proof}
+	Define $K$ as in the proof for theorem \ref{th:marginal} for the convergence of the marginal
+	distributions of play. Our strategy mapping is then chosen to have $R := 2K + 1$ memory.
+	Thus a state for some player $i$ is a sequence $\tilde{s}^i = (a_0, a_1, ... a_{2K})$ of any arbitrary action combinations $a_k \in A$
+	which the player decides to remember, not necessarily the previous $2K+1$ periods of play. We could also call these his \emph{memories}.
+	We then denote by $s^i$ the last $2K$ action combinations of $\tilde{s}^i$, i.e. $\tilde{s}^i = (a_0, s^i)$.
+	And similarly to previous proofs we identify by $z^i(\tilde{s}^i) \in \Delta(A^i)$ the frequency distribution over the
+	last $K$ actions from $\tilde{s}^i$ of each player $i$.
+	
+	\medskip
+	Depending on the state $\tilde{s}^i$  each player $i$ is currently in, the strategy mapping $f^i$, and 
+	in particular the state-updating rule for the associated automaton is then defined as follows:
+	
+	\begin{itemize}
+		\item $\tilde{s}^i$ is not $K$-periodic ({\bf Mode I})
+		\begin{itemize}
+			\item	if $s^i$ is $K$-periodic and $z^i(\tilde{s}^i)$ is a $2\epsilon$-best reply to $z^{-i}(\tilde{s}^i)$, 
+			then player $i$ plays the same action he played $K$ and $2K$ periods earlier : $\bar{a}^i := a^i_1 = a^i_{K+1}$,
+			i.e. \emph{he continues his periodic play}.
+			
+			\item if $s^i$ is $K$-periodic and $z^i(\tilde{s}^i)$ is not a $2\epsilon$-best reply to $z^{-i}(\tilde{s}^i)$,
+			then player $i$ randomizes $\bar{a}^i$ uniformly over $A^i \setminus \{a^i_1\}$,
+			i.e. \emph{he breaks his periodic play}.
+			
+			\item if $s^i$ is not $K$-periodic player $i$ picks an action $\bar{a}^i$ uniformly at random from $A^i$.
+		\end{itemize}
+		After having observed all realized actions $\bar{a}$ the new state of $f^i$ becomes
+		$\bar{s}^i = (s^i, \bar{a}) = (a_1, ..., a_{2K}, \bar{a})$.
+			
+		\item $\tilde{s}^i$ is $K$-periodic ({\bf Mode II})\\
+			Player $i$ plays the mixed action $z^i(\tilde{s}^i)$ and the state remains the same $\bar{s}^i = \tilde{s}^i$.
+		
+		\item The automata is initialized with any state $\tilde{s}^i$ which is not $K$-periodic.
+	\end{itemize}
+	
+	% what about the independence of players? No we don't care about "joint" distributions here 
+	\begin{observation}
+		Once a players behavior is in Mode II it will remain constant and he will play the same mixed action
+		$z^i(\tilde{s}^i)$ forever.
+	\end{observation}
+	Therefore all players should only enter the second mode, i.e. have a $K$-periodic state $\tilde{s}^i$ once $z^i(\tilde{s}^i)$
+	corresponds to the Nash equilibria $\underline{x}^i$. However for $\tilde{s}^i$ to become $K$-periodic, first $s^i$ has to
+	be $K$-periodic.
+	\[
+		\tilde{s}^i = a_{0},  \overbrace{\underbrace{a_{1},  ..., a_{K}}_{K \text{ rounds}}, \underbrace{a_{K+1}, .., a_{2K}}_{K \text{ rounds}} }^{s^i}
+	\]
+	Given that all players will update their state to be $\bar{s}^i = (s^i, \bar{a}) = (a_1, ..., a_{2K}, \bar{a})$,
+	$K$-periodicity can only be achieved if $\bar{a} = a_1$, i.e. all players simultaneously continued their periodic play of $s^i$.
+	Yet each player will only display this behavior if his $z^i(\tilde{s}^i)$ was a $2\epsilon$-best reply to $z^{-i}(\tilde{s}^i)$.
+	Therefore all players will enter Mode II only if they are all best-replying. Otherwise at least one player will have
+	purposely broken the periodic play.
+\end{proof}
+
+\begin{remark}
+	While players do indeed begin the game under different states $s^i$, after at most $2K + 1$ periods
+	they will all share the same state $\tilde{s}$. So all players will remember the last action combinations
+	until the Nash equilibria is reached, at which point this becomes the only memory they hold on to.
+\end{remark}
+
+\section{Closing}
+
+Throughout this paper we have now explored the influence of the past on the decisions of players
+and how it affects the convergence to Nash Equilibria by addressing the inability of players to detect them individually
+due to their decentralized behavior.
+While surprisingly a simple 2-recall
+was sufficient to guarantee the convergence to pure equilibria with a random search and discovery
+strategy, we had to give players the ability to remember arbitrary plays to extend this result to mixed
+equilibria. 
+
+% Joke - we've given our players recall and memory - now all they are missing is <funny human concept> and they could 
+
+% References
+\begin{thebibliography}{9}
+
+    \bibitem{paper}
+    Sergiu Hart, Andreu Mas-Colell.
+    \emph{Stochastic Uncoupled Dynamics and Nash Equilibrium}.
+    Journal of Economic Literature (2004)
+    
+    \bibitem{prevpaper}
+    Sergiu Hart, Andreu Mas-Colell.
+    \emph{Uncoupled Dynamics Do Not Lead to Nash Equilibrium}.
+    The American Economic Review (2003)
+
+\end{thebibliography}
+
+\end{document}
