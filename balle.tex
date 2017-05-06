@@ -385,7 +385,7 @@ as long as the pattern of the state $(a', a)$ seems to indicate that a global op
 
 %%% Do an example - show how this would work on the game above!
 
-\section{Mixed Equilibria}
+\section{Mixed Equilibria\protect\footnote{section will not be presented during the talk}}
 
 Under the existence of pure Nash equilibria we have observed very satisfying results in terms of convergence
 possibility. However we will now lift this very optimistic assumption and consider the general case of mixed and
@@ -520,6 +520,7 @@ all action combinations $a \in A$ it holds that $|u^i(a)| \leq M$.
 			i.e. $s = (a_1, a_2, .., a_K, a_1, a_2, ..., a_K)$
 		\end{definition}
 		\begin{definition}
+            \label{def:z}
 		Given the current state $s$ we denote by $z^i \in \Delta(A^i)$ the frequency distribution of the last $K$ actions of
 		each player $i$ :
 		\[
@@ -837,57 +838,58 @@ And indeed allowing players to have "memories" leads to a positive result.
 	distributions of play. Our strategy mapping is then chosen to have $R := 2K + 1$ memory.
 	Thus a state for some player $i$ is a sequence $\tilde{s}^i = (a_0, a_1, ... a_{2K})$ of any arbitrary action combinations $a_k \in A$
 	which the player decides to remember, not necessarily the previous $2K+1$ periods of play. We could also call these his \emph{memories}.
-	We then denote by $s^i$ the last $2K$ action combinations of $\tilde{s}^i$, i.e. $\tilde{s}^i = (a_0, s^i)$.
-	And similarly to previous proofs we identify by $z^i(\tilde{s}^i) \in \Delta(A^i)$ the frequency distribution over the
-	last $K$ actions from $\tilde{s}^i$ of each player $i$.
+    Our strategy mapping will be constructed in such a way that all players share the same memories. All players will thus
+    always be in the same state $\tilde{s}^i = \tilde{s}$.
+	We then denote by $s$ the most recent $2K$ memories of $\tilde{s}$, i.e. $\tilde{s} = (a_0, s)$.
+	And similarly to previous proofs \ref{def:z} we identify by $z^i \in \Delta(A^i)$ the frequency distribution over the
+	last $K$ actions from $\tilde{s}$ of each player $i$.
 	
 	\medskip
-	Depending on the state $\tilde{s}^i$  each player $i$ is currently in, the strategy mapping $f^i$, and 
+	Depending on the state $\tilde{s}$ all players currently share, the strategy mapping $f^i$, and 
 	in particular the state-updating rule for the associated automaton is then defined as follows:
 	
 	\begin{itemize}
-		\item $\tilde{s}^i$ is not $K$-periodic ({\bf Mode I})
+		\item $\tilde{s}$ is not $K$-periodic ({\bf Mode I})
 		\begin{itemize}
-			\item	if $s^i$ is $K$-periodic and $z^i(\tilde{s}^i)$ is a $2\epsilon$-best reply to $z^{-i}(\tilde{s}^i)$, 
+			\item	if $s$ is $K$-periodic and $z^i$ is a $2\epsilon$-best reply to $z^{-i}$, 
 			then player $i$ plays the same action he played $K$ and $2K$ periods earlier : $\bar{a}^i := a^i_1 = a^i_{K+1}$,
 			i.e. \emph{he continues his periodic play}.
 			
-			\item if $s^i$ is $K$-periodic and $z^i(\tilde{s}^i)$ is not a $2\epsilon$-best reply to $z^{-i}(\tilde{s}^i)$,
+			\item if $s$ is $K$-periodic and $z^i$ is not a $2\epsilon$-best reply to $z^{-i}$,
 			then player $i$ randomizes $\bar{a}^i$ uniformly over $A^i \setminus \{a^i_1\}$,
 			i.e. \emph{he breaks his periodic play}.
 			
-			\item if $s^i$ is not $K$-periodic player $i$ picks an action $\bar{a}^i$ uniformly at random from $A^i$.
+			\item if $s$ is not $K$-periodic player $i$ picks an action $\bar{a}^i$ uniformly at random from $A^i$.
 		\end{itemize}
 		After having observed all realized actions $\bar{a}$ the new state of $f^i$ becomes
-		$\bar{s}^i = (s^i, \bar{a}) = (a_1, ..., a_{2K}, \bar{a})$.
+		$\bar{s} = (s, \bar{a}) = (a_1, ..., a_{2K}, \bar{a})$.
 			
-		\item $\tilde{s}^i$ is $K$-periodic ({\bf Mode II})\\
-			Player $i$ plays the mixed action $z^i(\tilde{s}^i)$ and the state remains the same $\bar{s}^i = \tilde{s}^i$.
+		\item $\tilde{s}$ is $K$-periodic ({\bf Mode II})\\
+			Player $i$ plays the mixed action $z^i$ and the state remains the same $\bar{s} = \tilde{s}$.
 		
-		\item The automata is initialized with any state $\tilde{s}^i$ which is not $K$-periodic.
+		\item All automata are initialized with some state $\tilde{s}$ which is not $K$-periodic.
 	\end{itemize}
 	
 	% what about the independence of players? No we don't care about "joint" distributions here 
 	\begin{observation}
 		Once a players behavior is in Mode II it will remain constant and he will play the same mixed action
-		$z^i(\tilde{s}^i)$ forever.
+		$z^i$ forever.
 	\end{observation}
-	Therefore all players should only enter the second mode, i.e. have a $K$-periodic state $\tilde{s}^i$ once $z^i(\tilde{s}^i)$
-	corresponds to the Nash equilibria $\underline{x}^i$. However for $\tilde{s}^i$ to become $K$-periodic, first $s^i$ has to
+	Therefore all players should only enter the second mode, i.e. have a $K$-periodic state $\tilde{s}$ once $z^i$
+	corresponds to the Nash equilibria $\underline{x}^i$. However for $\tilde{s}$ to become $K$-periodic, first $s$ has to
 	be $K$-periodic.
 	\[
-		\tilde{s}^i = a_{0},  \overbrace{\underbrace{a_{1},  ..., a_{K}}_{K \text{ rounds}}, \underbrace{a_{K+1}, .., a_{2K}}_{K \text{ rounds}} }^{s^i}
+		\tilde{s} = a_{0},  \overbrace{\underbrace{a_{1},  ..., a_{K}}_{K \text{ rounds}}, \underbrace{a_{K+1}, .., a_{2K}}_{K \text{ rounds}} }^{s}
 	\]
-	Given that all players will update their state to be $\bar{s}^i = (s^i, \bar{a}) = (a_1, ..., a_{2K}, \bar{a})$,
-	$K$-periodicity can only be achieved if $\bar{a} = a_1$, i.e. all players simultaneously continued their periodic play of $s^i$.
-	Yet each player will only display this behavior if his $z^i(\tilde{s}^i)$ was a $2\epsilon$-best reply to $z^{-i}(\tilde{s}^i)$.
+	Given that all players will update their state to be $\bar{s} = (s, \bar{a}) = (a_1, ..., a_{2K}, \bar{a})$,
+	$K$-periodicity can only be achieved if $\bar{a} = a_1$, i.e. all players simultaneously continued their periodic play of $s$.
+	Yet each player will only display this behavior if his $z^i$ was a $2\epsilon$-best reply to $z^{-i}$.
 	Therefore all players will enter Mode II only if they are all best-replying. Otherwise at least one player will have
 	purposely broken the periodic play.
 \end{proof}
 
 \begin{remark}
-	While players do indeed begin the game under different states $s^i$, after at most $2K + 1$ periods
-	they will all share the same state $\tilde{s}$. So all players will remember the last action combinations
+	So all players will remember the last action combinations
 	until the Nash equilibria is reached, at which point this becomes the only memory they hold on to.
 \end{remark}
 
