@@ -385,7 +385,7 @@ as long as the pattern of the state $(a', a)$ seems to indicate that a global op
 
 %%% Do an example - show how this would work on the game above!
 
-\section{Mixed Equilibria\footnote{This section will not be presented during the talk}}
+\section{Mixed Equilibria\protect\footnote{section will not be presented during the talk}}
 
 Under the existence of pure Nash equilibria we have observed very satisfying results in terms of convergence
 possibility. However we will now lift this very optimistic assumption and consider the general case of mixed and
@@ -520,7 +520,7 @@ all action combinations $a \in A$ it holds that $|u^i(a)| \leq M$.
 			i.e. $s = (a_1, a_2, .., a_K, a_1, a_2, ..., a_K)$
 		\end{definition}
 		\begin{definition}
-        \label{
+        \label{def:z}
 		Given the current state $s$ we denote by $z^i \in \Delta(A^i)$ the frequency distribution of the last $K$ actions of
 		each player $i$ :
 		\[
@@ -841,7 +841,7 @@ And indeed allowing players to have "memories" leads to a positive result.
     Our strategy mapping will be constructed in such a way that all players share the same memories. All players will thus
     always be in the same state $\tilde{s}^i = \tilde{s}$.
 	We then denote by $s$ the most recent $2K$ memories of $\tilde{s}$, i.e. $\tilde{s} = (a_0, s)$.
-	And similarly to previous proofs we identify by $z^i \in \Delta(A^i)$ the frequency distribution over the
+	And similarly to previous proofs \ref{def:z} we identify by $z^i \in \Delta(A^i)$ the frequency distribution over the
 	last $K$ actions from $\tilde{s}$ of each player $i$.
 	
 	\medskip
@@ -872,11 +872,11 @@ And indeed allowing players to have "memories" leads to a positive result.
 	
 	% what about the independence of players? No we don't care about "joint" distributions here 
 	\begin{observation}
-		Once a players behavior is in Mode II it will remain constant and he will play the same mixed action
+		Once the strategy mapping reaches Mode II the player will play the same mixed action
 		$z^i$ forever.
 	\end{observation}
-	Therefore all players should only enter the second mode, i.e. have a $K$-periodic state $\tilde{s}$ once $z^i$
-	corresponds to the Nash equilibria $\underline{x}^i$. However for $\tilde{s}$ to become $K$-periodic, first $s$ has to
+    Therefore all players should only enter the second mode, i.e. have a $K$-periodic state $\tilde{s}$ once $z = (z^1, ..., z^N)$
+	corresponds to the Nash equilibria $\eq{x}$. However for $\tilde{s}$ to become $K$-periodic, first $s$ has to
 	be $K$-periodic.
 	\[
 		\tilde{s} = a_{0},  \overbrace{\underbrace{a_{1},  ..., a_{K}}_{K \text{ rounds}}, \underbrace{a_{K+1}, .., a_{2K}}_{K \text{ rounds}} }^{s}
@@ -884,8 +884,8 @@ And indeed allowing players to have "memories" leads to a positive result.
 	Given that all players will update their state to be $\bar{s} = (s, \bar{a}) = (a_1, ..., a_{2K}, \bar{a})$,
 	$K$-periodicity can only be achieved if $\bar{a} = a_1$, i.e. all players simultaneously continued their periodic play of $s$.
 	Yet each player will only display this behavior if his $z^i$ was a $2\epsilon$-best reply to $z^{-i}$.
-	Therefore all players will enter Mode II only if they are all best-replying. Otherwise at least one player will have
-	purposely broken the periodic play.
+    Otherwise at least one player will have purposely broken the periodic play.
+	Therefore all players will enter Mode II only if they are all best-replying, thus making $z$ a Nash Equilibrium.
 \end{proof}
 
 \begin{remark}
