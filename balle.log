@@ -1,7 +1,6 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  20 APR 2017 17:45
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  6 MAY 2017 15:46
 entering extended mode
  restricted \write18 enabled.
- file:line:error style messages enabled.
  %&-line parsing enabled.
 **balle.tex
 (./balle.tex
@@ -947,7 +946,7 @@ LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 152.
  [2] [3] [4]
 [5] [6] [7] [8] [9] [10]
-Overfull \hbox (7.45206pt too wide) in paragraph at lines 668--670
+Overfull \hbox (7.45206pt too wide) in paragraph at lines 669--671
 \OML/cmm/m/it/10 k \OMS/cmsy/m/n/10 2 f\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 ; :::;
  \OT1/cmr/m/n/10 2\OML/cmm/m/it/10 K\OMS/cmsy/m/n/10 g$ \T1/cmr/m/it/10 and con
 -sists of a re-peated \T1/cmr/m/n/10 ba-sic \T1/cmr/m/it/10 se-quence $\OML/cmm
@@ -959,30 +958,17 @@ Overfull \hbox (7.45206pt too wide) in paragraph at lines 668--670
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[12]
-
-LaTeX Warning: Command \b invalid in math mode on input line 829.
-
-
-LaTeX Warning: Command \b invalid in math mode on input line 829.
-
-
-LaTeX Warning: Command \b invalid in math mode on input line 829.
-
-
-LaTeX Warning: Command \b invalid in math mode on input line 831.
-
-[13] [14] [15] (./balle.aux)
+[12] [13] [14] [15] (./balle.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 23208 strings out of 493089
- 464051 string characters out of 6134842
- 510885 words of memory out of 5000000
- 26293 multiletter control sequences out of 15000+600000
- 29434 words of font info for 82 fonts, out of 8000000 for 9000
+ 23218 strings out of 493089
+ 464204 string characters out of 6134842
+ 509894 words of memory out of 5000000
+ 26303 multiletter control sequences out of 15000+600000
+ 31899 words of font info for 91 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  55i,19n,75p,10412b,631s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
@@ -1013,7 +999,7 @@ nts/type1/public/cm-super/sfrm0900.pfb></usr/local/texlive/2015/texmf-dist/font
 s/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2015/texmf-dist/fonts/
 type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2015/texmf-dist/fonts/ty
 pe1/public/cm-super/sfti1000.pfb>
-Output written on balle.pdf (15 pages, 418642 bytes).
+Output written on balle.pdf (15 pages, 421540 bytes).
 PDF statistics:
  166 PDF objects out of 1000 (max. 8388607)
  120 compressed objects within 2 object streams
